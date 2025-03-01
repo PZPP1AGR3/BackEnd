@@ -1,0 +1,76 @@
+services:
+    web:
+        container_name: ${CONTAINER_NAME}
+        build:
+            dockerfile: .docker/web/Dockerfile
+            context: ..
+            args:
+                - USERNAME=${USERNAME:-ubuntu}
+                - UID=${UID:-1000}
+                - GROUP=${GROUP:-root}
+                - ROOTPASS=${ROOTPASS:-test}}
+        expose:
+            - "${WEB_PORT:-80}"
+        volumes:
+            - ../:/var/www
+        ports:
+            -   "${WEB_EXTERNAL_PORT:-9090}:80"
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        links:
+            - db
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${CONTAINER_NAME}.entrypoints=${ENTRYPOINT}"
+            - "traefik.http.routers.${CONTAINER_NAME}.rule=Host(`${DOMAIN}`, `api.${DOMAIN}`)"
+            - "traefik.http.routers.${CONTAINER_NAME}.service=${CONTAINER_NAME}"
+            - "traefik.http.services.${CONTAINER_NAME}.loadbalancer.server.port=${WEB_PORT:-80}"
+        networks:
+            - proxy
+        tty: true
+
+    db:
+        container_name: "${CONTAINER_NAME}-db"
+        image: mysql:8.3
+        command: --default-authentication-plugin=mysql_native_password --secure-file-priv='' --skip-log-bin
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD:-test}"
+        expose:
+            - "${MYSQL_PORT:-3306}"
+        volumes:
+            - ./docker_volumes/db:/var/lib/mysql
+            - ./main-db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${CONTAINER_NAME}-db.entrypoints=${ENTRYPOINT_DB}"
+            - "traefik.http.routers.${CONTAINER_NAME}-db.rule=Host(`db.${DOMAIN}`)"
+            - "traefik.http.routers.${CONTAINER_NAME}-db.service=${CONTAINER_NAME}-db"
+            - "traefik.http.services.${CONTAINER_NAME}-db.loadbalancer.server.port=${MYSQL_PORT:-3306}"
+        networks:
+            - proxy
+
+    phpmyadmin:
+        container_name: "${CONTAINER_NAME}-pma"
+        image: phpmyadmin/phpmyadmin:latest
+        platform: linux/amd64
+        expose:
+            - "${PHPMYADMIN_PORT:-80}"
+        depends_on:
+            - db
+        links:
+            - db
+        environment:
+            UPLOAD_LIMIT: 750M
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${CONTAINER_NAME}-pma.entrypoints=${ENTRYPOINT}"
+            - "traefik.http.routers.${CONTAINER_NAME}-pma.rule=Host(`pma.${DOMAIN}`)"
+            - "traefik.http.routers.${CONTAINER_NAME}-pma.service=${CONTAINER_NAME}-pma"
+            - "traefik.http.services.${CONTAINER_NAME}-pma.loadbalancer.server.port=${PHPMYADMIN_PORT:-80}"
+        networks:
+            - proxy
+
+networks:
+    proxy:
+        external: true
