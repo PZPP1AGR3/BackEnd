@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
 
 class UserController extends Controller
@@ -22,12 +23,21 @@ class UserController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        abort_if(! $request->user()->is_admin, 403);
+        abort_if(! $request->user()->is_admin, 401);
 
         $request->validate([
+            /**
+             * @default 1
+             */
             'page' => 'integer|min:1',
             'search' => 'sometimes|string',
+            /**
+             * @default id
+             */
             'sort_by' => 'sometimes|string|in:id,name,role,created_at',
+            /**
+             * @default asc
+             */
             'sort_dir' => 'sometimes|string|in:asc,desc',
             'role' => ['sometimes', new Enum(Role::class)],
         ]);
@@ -55,7 +65,30 @@ class UserController extends Controller
     public function show(Request $request, User $user): UserResource
     {
         $isAdmin = $request->user()->is_admin;
-        abort_if($user->id != $request->user()->id && ! $isAdmin, 403);
+        abort_if($user->id != $request->user()->id && ! $isAdmin, 401);
+
+        return new UserResource($user);
+    }
+
+    /**
+     * Store
+     *
+     * Create a user.
+     */
+    public function store(Request $request): UserResource
+    {
+        abort_if(! $request->user()->is_admin, 401);
+
+        $validated = $request->validate([
+            'username' => 'required|string|unique:users|min:3',
+            'password' => 'required|string|min:6',
+            'name' => 'required|string|min:3',
+            'role' => ['sometimes', new Enum(Role::class)],
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated);
 
         return new UserResource($user);
     }
@@ -68,7 +101,7 @@ class UserController extends Controller
     public function update(Request $request, User $user): UserResource
     {
         $isAdmin = $request->user()->is_admin;
-        abort_if($user->id != $request->user()->id && ! $isAdmin, 403);
+        abort_if($user->id != $request->user()->id && ! $isAdmin, 401);
 
         $validated = $request->validate([
             'name' => 'sometimes|string',
@@ -91,7 +124,7 @@ class UserController extends Controller
      */
     public function destroy(Request $request, User $user): Response
     {
-        abort_if(! $request->user()->is_admin, 403);
+        abort_if(! $request->user()->is_admin, 401);
 
         $user->delete();
 

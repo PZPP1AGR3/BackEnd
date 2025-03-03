@@ -15,6 +15,8 @@ class LoginController extends Controller
      * Login
      *
      * Exchange username and password for a bearer token.
+     *
+     * @unauthenticated
      */
     public function __invoke(Request $request): JsonResponse
     {

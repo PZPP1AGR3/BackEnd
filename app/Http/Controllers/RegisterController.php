@@ -15,6 +15,8 @@ class RegisterController extends Controller
      * Register
      *
      * Create a new user and return a bearer token.
+     *
+     * @unauthenticated
      */
     public function __invoke(Request $request): JsonResponse
     {
