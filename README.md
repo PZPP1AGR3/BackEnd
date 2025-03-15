@@ -62,3 +62,36 @@ This will create an admin account, `admin` with *random password* (will be displ
 ## API Docs
 
 #### Navigate to `${APP_URL}/docs/api` to view the API documentation.
+
+---
+
+## Functionalities
+
+### Authentication
+
+- Register (create a new user and return access token)
+- Login (exchange username and password for access token)
+- Fetch user details
+
+### Notes
+
+- Create notes
+- Update notes
+- Delete notes
+- View notes
+- Search and filter notes
+- Share notes
+
+### Users
+
+- Retrieve a list of users. (admin only)
+- Create a user (admin only).
+- Retrieve a user. (other than self only admin can view other users)
+- Update a user. (other than self only admin can update other users)
+- Delete a user. (admin only)
+
+### Tests
+
+- Run tests to ensure API endpoints are working as expected.
+
+
