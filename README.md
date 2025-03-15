@@ -71,7 +71,7 @@ This will create an admin account, `admin` with *random password* (will be displ
 
 - Register (create a new user and return access token)
 - Login (exchange username and password for access token)
-- Fetch user details
+- Fetch user details (current logged in user)
 
 ### Notes
 
@@ -93,5 +93,17 @@ This will create an admin account, `admin` with *random password* (will be displ
 ### Tests
 
 - Run tests to ensure API endpoints are working as expected.
+
+---
+
+## Technology
+
+### Backend
+
+- Laravel 12
+- Docker (apache with PHP 8.3)
+- MySQL
+- Scrabble (for API documentation)
+- PHPUnit (for testing)
 
 
