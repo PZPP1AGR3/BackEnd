@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\NoteResource;
+use App\Http\Resources\NoteSimpleResource;
 use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -16,7 +17,7 @@ class NoteController extends Controller
      *
      * Get a list of notes
      *
-     * @return LengthAwarePaginator<NoteResource>
+     * @return LengthAwarePaginator<NoteSimpleResource>
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -46,7 +47,6 @@ class NoteController extends Controller
         }
 
         $notes = Note::query()
-            ->with('user')
             ->when($request->has('is_public'), fn ($query, $isPublic) => $query->where('is_public', $isPublic))
             ->when($request->user_id, fn ($query, $userId) => $query->where('user_id', $userId)->orWhere('is_public', true))
             ->when($request->search, function ($query, $search) {
@@ -56,7 +56,7 @@ class NoteController extends Controller
             ->when($request->title, fn ($query, $title) => $query->where('title', 'like', $title))
             ->paginate($request->input('per_page', 10));
 
-        return NoteResource::collection($notes);
+        return NoteSimpleResource::collection($notes);
     }
 
     /**
