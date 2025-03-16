@@ -27,6 +27,7 @@ class RegisterController extends Controller
         ]);
 
         $user = User::create($validated);
+        $user->refresh();
 
         return response()->json([
             'token' => $user->createToken('token-name')->plainTextToken,
