@@ -94,6 +94,10 @@ This will create an admin account, `admin` with *random password* (will be displ
 
 - Run tests to ensure API endpoints are working as expected.
 
+```console
+docker compose exec web php artisan test
+```
+
 ---
 
 ## Technology
