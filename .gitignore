@@ -30,3 +30,4 @@ yarn-error.log
 /storage/debugbar/
 storage/clockwork/
 storage/system_uptime.txt
+/.vs
